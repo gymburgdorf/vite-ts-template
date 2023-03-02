@@ -1,0 +1,12 @@
+{
+  "name": "simhelpers",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "keywords": [],
+  "author": "3e8",
+  "license": "MIT"
+}
