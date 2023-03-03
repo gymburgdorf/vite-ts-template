@@ -1,16 +1,26 @@
 {
   "name": "simhelpers",
   "version": "1.0.0",
-  "description": "",
   "type": "module",
   "scripts": {
-    "build": "npx tsc"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
+  "files": ["dist"],
+  "main": "./dist/simhelpers.umd.cjs",
+  "module": "./dist/simhelpers.js",
+  "exports": {
+    ".": {
+      "import": "./dist/simhelpers.js",
+      "require": "./dist/simhelpers.umd.cjs"
+    }
+  },
   "author": "3e8",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4"
   },
   "dependencies": {
     "pixi.js": "^7.1.4"
