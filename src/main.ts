@@ -1,5 +1,7 @@
-
-
 import {World} from "./simhelpers"
 
-console.log(new World());
+const w = new World()
+
+console.log(w);
+
+document.querySelector(".app")!.appendChild((w.app.view));
