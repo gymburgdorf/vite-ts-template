@@ -7,7 +7,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/simhelpers.umd.cjs",
   "module": "./dist/simhelpers.js",
   "exports": {

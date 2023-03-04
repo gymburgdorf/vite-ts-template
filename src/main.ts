@@ -1,7 +1,41 @@
-import {World} from "./simhelpers"
+import {World, Actor} from "./simhelpers"
 
-const w = new World()
+const world = new World({
+    hUnits: 200,
+    grid: {step: 50},
+    unit: "m",
+    minUnits: {x: 0, y:0},
+    img: "img/oceanSky.jpg",
+    fontColor: "#ffffff"
+});
 
-console.log(w);
+const flugi = new Actor({img: "img/flugi50.png", x: -40, y: 60, wUnits: 14});
+const glider = new Actor({img: "img/Segelflieger50.png", x: 0, y: 100, wUnits: 14});
 
-document.querySelector(".app")!.appendChild((w.app.view as unknown as HTMLElement));
+let t = 0;
+const dt = 0.016;       // Zeitschritt in Sekunden
+flugi.vx = 35;
+flugi.vy = 0;
+glider.vx = 25;
+glider.vy = 0;
+
+window.addEventListener("keydown", taste);
+
+function taste(event: { key: string; }) {
+	console.log("Eine Taste wurde gedrückt:", event.key)
+} 
+
+function loop() {
+	flugi.x += flugi.vx * dt
+	glider.x += glider.vx * dt
+	world.update();
+}
+
+function raf() {
+    loop()
+    requestAnimationFrame(raf)
+}
+
+requestAnimationFrame(raf)
+
+
