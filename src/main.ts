@@ -5,12 +5,12 @@ const world = new World({
     grid: {step: 50},
     unit: "m",
     minUnits: {x: 0, y:0},
-    img: "img/oceanSky.jpg",
+    img: "https://gymburgdorf.github.io/simhelpers/img/oceanSky.jpg",
     fontColor: "#ffffff"
 });
 
-const flugi = new Actor({img: "img/flugi50.png", x: -40, y: 60, wUnits: 14});
-const glider = new Actor({img: "img/Segelflieger50.png", x: 0, y: 100, wUnits: 14});
+const flugi = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: -40, y: 60, wUnits: 14});
+const glider = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/Segelflieger50.png", x: 0, y: 100, wUnits: 14});
 
 let t = 0;
 const dt = 0.016;       // Zeitschritt in Sekunden
