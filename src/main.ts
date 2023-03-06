@@ -1,6 +1,7 @@
 import {World, Actor} from "./simhelpers"
 
 const world = new World({
+    element: document.querySelector(".app"),
     hUnits: 200,
     grid: {step: 50},
     unit: "m",

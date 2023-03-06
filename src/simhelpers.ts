@@ -5,7 +5,27 @@ import * as PIXI from 'pixi.js';
 type TCoord = { x: number, y: number }
 type TGrid = {step?: number, onlyX?: boolean, onlyY?: boolean}
 
+type RGB = `rgb(${number}, ${number}, ${number})`;
+type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
+type HEX = `#${string}`;
+type Color = RGB | RGBA | HEX;
+
+type Background = {img?: string, color?: Color}
+type Dimension = {unit?: string, w?: number, h?: number}
+type WorldParams = {element?: HTMLElement} & Background & Dimension
+
+class World {
+    readonly originalParams: WorldParams
+    element: HTMLElement
+    constructor(params: WorldParams) {
+        this.originalParams = params        
+        this.element = params.element || document.body
+        this.element.appendChild(this.app.view as unknown as HTMLElement)
+    }
+}
+
 type WorldOptions = {
+    element: HTMLElement
     wPx: number
     hPx: number
     wUnits: number
@@ -22,7 +42,8 @@ type WorldOptions = {
 
 let latestWorld: World
 
-export class World {
+export class WorldOld {
+    element: HTMLElement
     hPx: number
     wPx: number
     pxPerUnit!: number
@@ -54,7 +75,8 @@ export class World {
 
         //this.renderer = new PIXI.autoDetectRenderer(this.wPx, this.hPx);
 
-        document.body.appendChild(this.app.view as unknown as HTMLElement);
+        this.element = params.element || document.body
+        this.element.appendChild(this.app.view as unknown as HTMLElement);
 
         if (params.img) {
             var background = PIXI.Sprite.from(params.img);
@@ -63,6 +85,7 @@ export class World {
                 this.resizeBG(background)
                 this.createAxis(params.grid);
             })
+            window.addEventListener("resize", ()=>this.resizeBG(background))
         }
         else {
             this.createAxis(params.grid);
@@ -72,6 +95,8 @@ export class World {
         latestWorld = this
     }
     resizeBG(background: PIXI.Sprite) {
+        this.wPx = this.originalParams.wPx || this.element.getBoundingClientRect().width;
+        this.hPx = this.originalParams.hPx || window.innerHeight;
         const {width, height} = background.texture.baseTexture
         console.log({wPx: this.wPx, hPx: this.hPx, width, height});
         var bgScale = Math.min(this.wPx / width, this.hPx / height)
