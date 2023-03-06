@@ -11,16 +11,104 @@ type HEX = `#${string}`;
 type Color = RGB | RGBA | HEX;
 
 type Background = {img?: string, color?: Color}
-type Dimension = {unit?: string, w?: number, h?: number}
+type Dimension = {unit?: string, w?: number, h?: number, minUnits?: TCoord}
 type WorldParams = {element?: HTMLElement} & Background & Dimension
+
+let latestWorld: World 
 
 class World {
     readonly originalParams: WorldParams
     element: HTMLElement
+    img?: string
+    minUnits: TCoord
+    dimPx: DOMRect
+    color: Color
+    actors: Actor[]
+    app: PIXI.Application
     constructor(params: WorldParams) {
         this.originalParams = params        
         this.element = params.element || document.body
+
+        this.minUnits = params.minUnits || {x: 0, y: 0}
+        this.dimPx = this.element.getBoundingClientRect()
+
+        this.img = params.img || ""
+        this.color = params.color || "#111";
+
+        this.app = new PIXI.Application({background: this.color});
         this.element.appendChild(this.app.view as unknown as HTMLElement)
+        this.actors = []
+
+        latestWorld = this
+        //add resizeObserver
+        //resize
+    }
+    getSize() {
+
+    }
+    resizeBG(background: PIXI.Sprite) {
+        this.dimPx = this.element.getBoundingClientRect()
+        const {width, height} = background.texture.baseTexture
+        var bgScale = Math.min(this.dimPx.width / width, this.dimPx.height / height)
+        background.width = width * bgScale
+        background.height = height * bgScale
+        this.app.view.width = width * bgScale;
+        this.app.view.height = height * bgScale;
+        this.dimPx = this.element.getBoundingClientRect()
+        this.app.resize()
+        this.rescale()
+        this.render()
+    }
+    render() {
+        this.app.renderer.render(this.app.stage)
+    }
+    add(obj: Actor) {
+        this.actors.push(obj)
+        console.log({obj});
+        
+        this.app.stage.addChild(obj.sprite)
+        this.render()
+    }
+    xToPx(xUnit: number) {
+        return (xUnit - this.minUnits.x) * this.pxPerUnit
+    }
+    yToPx(yUnit: number) {
+        return this.hPx - (yUnit - this.minUnits.y) * this.pxPerUnit
+    }
+    unitsToPx(units: TCoord) {
+        return { x: this.xToPx(units.x), y: this.yToPx(units.y) }
+    }
+    xToUnit(xPx: number) {
+        return xPx / this.pxPerUnit + this.minUnits.x
+    }
+    yToUnit(yPx: number) {
+        return (this.hPx - yPx) / this.pxPerUnit + this.minUnits.y
+    }
+    get pxPerUnit() {
+        return 
+    }
+    rescale() {
+        const params = this.originalParams
+        if (params.w) {
+            this.w = params.w
+            this.pxPerUnit = this.wPx / this.wUnits
+            this.hUnits = this.hPx / this.pxPerUnit
+        }
+        else if (params.hUnits) {
+            this.hUnits = params.hUnits
+            this.pxPerUnit = this.hPx / this.hUnits
+            this.wUnits = this.wPx / this.pxPerUnit
+        }
+        else {
+            this.pxPerUnit = 1
+            this.wUnits = this.wPx / this.pxPerUnit
+            this.hUnits = this.hPx / this.pxPerUnit
+        }
+        this.minUnits = params.minUnits || { x: -this.wUnits / 2, y: -this.hUnits / 2 };
+        this.maxUnits = params.maxUnits || { x: this.minUnits.x + this.wUnits, y: this.minUnits.y + this.hUnits };
+    }
+    pxToUnits(px: TCoord) {
+        return { x: this.xToUnit(px.x), y: this.yToUnit(px.y) }
     }
 }
 
@@ -40,7 +128,7 @@ type WorldOptions = {
     fontColor: string
 }
 
-let latestWorld: World
+let latestWorldOld: WorldOld
 
 export class WorldOld {
     element: HTMLElement
@@ -92,7 +180,7 @@ export class WorldOld {
         }
         this.app.renderer.render(this.stage)
         this.actors = [];
-        latestWorld = this
+        latestWorldOld = this
     }
     resizeBG(background: PIXI.Sprite) {
         this.wPx = this.originalParams.wPx || this.element.getBoundingClientRect().width;
