@@ -11,7 +11,7 @@ type HEX = `#${string}`;
 type Color = RGB | RGBA | HEX;
 
 type Background = {img?: string, color?: Color}
-type Dimension = {unit?: string, w?: number, h?: number, minUnits?: TCoord}
+type Dimension = {unit?: string, w?: number, h?: number, minUnits?: TCoord, maxPx?: {w: number, h: number}}
 type WorldParams = {element?: Element | null} & Background & Dimension
 
 let latestWorld: World 
@@ -21,6 +21,7 @@ export class World {
     element: HTMLElement
     img?: string
     minUnits: TCoord
+    maxPx: {w: number, h: number}
     w!: number
     h!: number
     color: Color
@@ -30,8 +31,7 @@ export class World {
     private constructor(params: WorldParams) {
         this.originalParams = params        
         this.element = params.element as HTMLElement || document.body
-        this.element.style.position = "relative";
-        this.element.style.overflow = "hidden";
+        this.maxPx = params.maxPx || {w: Math.min(window.innerWidth, this.element.getBoundingClientRect().width), h: window.innerHeight}
 
         this.minUnits = params.minUnits || {x: 0, y: 0}
 
@@ -39,7 +39,6 @@ export class World {
         this.color = params.color || "#111";
 
         this.app = new PIXI.Application({background: this.color});
-        this.app.resizeTo = this.element
         this.element.appendChild(this.app.view as unknown as HTMLElement)
         
         this.adaptSize()
@@ -78,22 +77,16 @@ export class World {
     // }
     adaptSize() {
         const {w, h} = this.dimPx()
-        this.app.resize()
+        this.app.view.width = w
+        this.app.view.height = h
     }
     dimPx() {
-        const {w: wMax, h: hMax} = this.getMaxDim()
+        const {w: wMax, h: hMax} = this.maxPx
         const {w: wUnit, h: hUnit} = this.dimUnits()
         const limit = wMax > this.getAspectRatio() * hMax ? "H" : "W"
         const pxPerUnit = limit === "W" ? wMax / wUnit : hMax / hUnit
         console.log({wMax, hMax, limit});
         return {w: wUnit * pxPerUnit, h: hUnit * pxPerUnit, pxPerUnit}
-    }
-    getMaxDim() {
-        let {width, height} = this.element.getBoundingClientRect()      
-        return {
-            w: Math.min(width, window.innerWidth),
-            h: Math.min(height || window.innerHeight, window.innerHeight)
-        }
     }
     dimUnits() {
         const {w, h} = this.originalParams
@@ -124,9 +117,8 @@ export class World {
         const imgRatio = width / height
         if(!this.getForcedRatio()) {
             localStorage[this.getAspectKey()] = imgRatio
-        }
+        }      
         this.adaptSize()
-        this.app.resize()
         this.render()
     }
 
