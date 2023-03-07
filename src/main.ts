@@ -7,6 +7,14 @@ const world = await World.create({
     minUnits: {x: 0, y:0},
     img: "https://gymburgdorf.github.io/simhelpers/img/oceanSky.jpg", 
 });
+
+const world2 = await World.create({
+    element: document.querySelector(".app2"),
+    w: 100,
+    h: 100,
+    unit: "m",
+    color: "#999", 
+});
 //    grid: {step: 50},
 //fontColor: "#ffffff"
 

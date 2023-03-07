@@ -61,11 +61,43 @@ export class World {
             })
         }
         else {
+            world.setSizeFromDim()
             return world
         }
     }
     getSize() {
 
+    }
+    setSizeFromDim() {
+        const {w, h} = this.originalParams
+        if(!w || ! h) {
+            console.warn("Please provide image or w,h in units")
+            return
+        }
+        this.dimPx = this.element.getBoundingClientRect()
+        const availableWidth = Math.min(this.dimPx.width, window.innerWidth)
+        const availableHeight = Math.min(this.dimPx.height || window.innerHeight, window.innerHeight)
+        const pxPerUnit = Math.min(availableWidth/ w, availableHeight / h)
+        this.app.view.width = w * pxPerUnit
+        this.app.view.height = h * pxPerUnit
+        this.dimPx = this.element.getBoundingClientRect()
+    }
+    rescale() {
+        const params = this.originalParams
+        if (params.w) {
+            this.w = params.w
+            this.h = this.dimPx.height / this.pxPerUnit
+        }
+        else if (params.h) {
+            this.h = params.h
+            let pxPerUnit = this.dimPx.height / this.h
+            this.w = this.dimPx.height / pxPerUnit
+        }
+        else {
+            this.w = this.dimPx.width
+            this.h = this.dimPx.height
+        }
+        this.minUnits = params.minUnits || { x: -this.w / 2, y: -this.h / 2 };
     }
     resizeBG(background: PIXI.Sprite) {
         this.dimPx = this.element.getBoundingClientRect()
@@ -107,23 +139,6 @@ export class World {
     }
     get pxPerUnit() {
         return this.dimPx.width / this.w
-    }
-    rescale() {
-        const params = this.originalParams
-        if (params.w) {
-            this.w = params.w
-            this.h = this.dimPx.height / this.pxPerUnit
-        }
-        else if (params.h) {
-            this.h = params.h
-            let pxPerUnit = this.dimPx.height / this.h
-            this.w = this.dimPx.height / pxPerUnit
-        }
-        else {
-            this.w = this.dimPx.width
-            this.h = this.dimPx.height
-        }
-        this.minUnits = params.minUnits || { x: -this.w / 2, y: -this.h / 2 };
     }
     pxToUnits(px: TCoord) {
         return { x: this.xToUnit(px.x), y: this.yToUnit(px.y) }
