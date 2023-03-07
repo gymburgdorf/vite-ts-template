@@ -1,6 +1,6 @@
 import {World, Actor} from "./simhelpers"
 
-const world = new World({
+const world = await World.create({
     element: document.querySelector(".app"),
     h: 200,
     unit: "m",
@@ -12,7 +12,6 @@ const world = new World({
 
 const flugi = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: -40, y: 60, wUnits: 14});
 const glider = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/Segelflieger50.png", x: 0, y: 100, wUnits: 14});
-
 
 let t = 0;
 const dt = 0.016;       // Zeitschritt in Sekunden

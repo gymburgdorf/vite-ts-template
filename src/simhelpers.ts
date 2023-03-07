@@ -27,7 +27,7 @@ export class World {
     color: Color
     actors: Actor[]
     app: PIXI.Application
-    constructor(params: WorldParams) {
+    private constructor(params: WorldParams) {
         this.originalParams = params        
         this.element = params.element || document.body
 
@@ -41,19 +41,28 @@ export class World {
         this.element.appendChild(this.app.view as unknown as HTMLElement)
         this.actors = []
 
-        if (params.img) {
-            var background = PIXI.Sprite.from(params.img);
-            this.app.stage.addChild(background);            
-            background.texture.baseTexture.on("loaded", () => {
-                this.resizeBG(background)
-                //this.createAxis(params.grid);
-            })
-            window.addEventListener("resize", ()=>this.resizeBG(background))
-        }
-
         latestWorld = this
         //add resizeObserver
         this.rescale()
+    }
+    static async create(params: WorldParams): Promise<World> {
+        const world = new World(params)
+        const img = params.img
+        if (img) {
+            return new Promise((resolve)=>{
+                let background = PIXI.Sprite.from(img);
+                world.app.stage.addChild(background);
+                window.addEventListener("resize", ()=>world.resizeBG(background))         
+                background.texture.baseTexture.on("loaded", () => {
+                    world.resizeBG(background)
+                    resolve(world)
+                    //this.createAxis(params.grid);
+                })
+            })
+        }
+        else {
+            return world
+        }
     }
     getSize() {
 
