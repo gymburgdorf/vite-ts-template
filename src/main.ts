@@ -8,13 +8,13 @@ const world = await World.create({
     img: "https://gymburgdorf.github.io/simhelpers/img/oceanSky.jpg", 
 });
 
-const world2 = await World.create({
-    element: document.querySelector(".app2"),
-    w: 100,
-    h: 100,
-    unit: "m",
-    color: "#999", 
-});
+// const world2 = await World.create({
+//     element: document.querySelector(".app2"),
+//     w: 100,
+//     h: 100,
+//     unit: "m",
+//     color: "#999", 
+// });
 //    grid: {step: 50},
 //fontColor: "#ffffff"
 

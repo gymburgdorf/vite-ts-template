@@ -18,40 +18,118 @@ let latestWorld: World
 
 export class World {
     readonly originalParams: WorldParams
-    element: Element
+    element: HTMLElement
     img?: string
     minUnits: TCoord
     w!: number
     h!: number
-    dimPx: DOMRect
     color: Color
     actors: Actor[]
     app: PIXI.Application
+
     private constructor(params: WorldParams) {
         this.originalParams = params        
-        this.element = params.element || document.body
+        this.element = params.element as HTMLElement || document.body
+        this.element.style.position = "relative";
+        this.element.style.overflow = "hidden";
 
         this.minUnits = params.minUnits || {x: 0, y: 0}
-        this.dimPx = this.element.getBoundingClientRect()
 
         this.img = params.img || ""
         this.color = params.color || "#111";
 
         this.app = new PIXI.Application({background: this.color});
+        this.app.resizeTo = this.element
         this.element.appendChild(this.app.view as unknown as HTMLElement)
+        
+        this.adaptSize()
+
         this.actors = []
 
         latestWorld = this
         //add resizeObserver
-        this.rescale()
     }
     getAspectRatio() {
-        const {w, h} = this.originalParams
-        if(w && h) return w / h
-        const localRatio = localStorage[`simhelpers-ratio-${this.img}`]
-        if(localRatio) return localRatio
-        return window.innerWidth / window.innerHeight
+        return this.getForcedRatio() || this.getStoredRatio() || window.innerWidth / window.innerHeight
     }
+    getForcedRatio() {
+        const {w, h} = this.originalParams
+        return w && h ? w / h : null
+    }
+    getStoredRatio() {
+        return localStorage[this.getAspectKey()] || null
+    }
+    getAspectKey() {
+        return `simhelpers-ratio-${this.img}`
+    }
+    // setSizeFromDim() {
+    //     const {w, h} = this.originalParams
+    //     if(!w || ! h) {
+    //         console.warn("Please provide image or w,h in units")
+    //         return
+    //     }
+    //     this.dimPx = this.element.getBoundingClientRect()
+    //     const availableWidth = Math.min(this.dimPx.width, window.innerWidth)
+    //     const availableHeight = Math.min(this.dimPx.height || window.innerHeight, window.innerHeight)
+    //     const pxPerUnit = Math.min(availableWidth/ w, availableHeight / h)
+    //     this.app.view.width = w * pxPerUnit
+    //     this.app.view.height = h * pxPerUnit
+    //     this.dimPx = this.element.getBoundingClientRect()
+    // }
+    adaptSize() {
+        const {w, h} = this.dimPx()
+        this.app.resize()
+    }
+    dimPx() {
+        const {w: wMax, h: hMax} = this.getMaxDim()
+        const {w: wUnit, h: hUnit} = this.dimUnits()
+        const limit = wMax > this.getAspectRatio() * hMax ? "H" : "W"
+        const pxPerUnit = limit === "W" ? wMax / wUnit : hMax / hUnit
+        console.log({wMax, hMax, limit});
+        return {w: wUnit * pxPerUnit, h: hUnit * pxPerUnit, pxPerUnit}
+    }
+    getMaxDim() {
+        let {width, height} = this.element.getBoundingClientRect()      
+        return {
+            w: Math.min(width, window.innerWidth),
+            h: Math.min(height || window.innerHeight, window.innerHeight)
+        }
+    }
+    dimUnits() {
+        const {w, h} = this.originalParams
+        return {
+            w: w || (h && h * this.getAspectRatio()) || this.getMaxDim().w,
+            h: h || (w && w / this.getAspectRatio()) || this.getMaxDim().h,
+        }
+    }
+    // rescale() {
+    //     const params = this.originalParams
+    //     if (params.w) {
+    //         this.w = params.w
+    //         this.h = this.dimPx.height / this.pxPerUnit
+    //     }
+    //     else if (params.h) {
+    //         this.h = params.h
+    //         let pxPerUnit = this.dimPx.height / this.h
+    //         this.w = this.dimPx.height / pxPerUnit
+    //     }
+    //     else {
+    //         this.w = this.dimPx.width
+    //         this.h = this.dimPx.height
+    //     }
+    //     this.minUnits = params.minUnits || { x: -this.w / 2, y: -this.h / 2 };
+    // }
+    resizeBG(background: PIXI.Sprite) {
+        const {width, height} = background.texture.baseTexture
+        const imgRatio = width / height
+        if(!this.getForcedRatio()) {
+            localStorage[this.getAspectKey()] = imgRatio
+        }
+        this.adaptSize()
+        this.app.resize()
+        this.render()
+    }
+
     static async create(params: WorldParams): Promise<World> {
         const world = new World(params)
         const img = params.img
@@ -75,57 +153,12 @@ export class World {
     getSize() {
 
     }
-    setSizeFromDim() {
-        const {w, h} = this.originalParams
-        if(!w || ! h) {
-            console.warn("Please provide image or w,h in units")
-            return
-        }
-        this.dimPx = this.element.getBoundingClientRect()
-        const availableWidth = Math.min(this.dimPx.width, window.innerWidth)
-        const availableHeight = Math.min(this.dimPx.height || window.innerHeight, window.innerHeight)
-        const pxPerUnit = Math.min(availableWidth/ w, availableHeight / h)
-        this.app.view.width = w * pxPerUnit
-        this.app.view.height = h * pxPerUnit
-        this.dimPx = this.element.getBoundingClientRect()
-    }
-    rescale() {
-        const params = this.originalParams
-        if (params.w) {
-            this.w = params.w
-            this.h = this.dimPx.height / this.pxPerUnit
-        }
-        else if (params.h) {
-            this.h = params.h
-            let pxPerUnit = this.dimPx.height / this.h
-            this.w = this.dimPx.height / pxPerUnit
-        }
-        else {
-            this.w = this.dimPx.width
-            this.h = this.dimPx.height
-        }
-        this.minUnits = params.minUnits || { x: -this.w / 2, y: -this.h / 2 };
-    }
-    resizeBG(background: PIXI.Sprite) {
-        this.dimPx = this.element.getBoundingClientRect()
-        const {width, height} = background.texture.baseTexture
-        var bgScale = Math.min(this.dimPx.width / width, this.dimPx.height / height)
-        background.width = width * bgScale
-        background.height = height * bgScale
-        this.app.view.width = width * bgScale;
-        this.app.view.height = height * bgScale;
-        this.dimPx = this.element.getBoundingClientRect()
-        this.app.resize()
-        this.rescale()
-        this.render()
-    }
+
     render() {
         this.app.renderer.render(this.app.stage)
     }
     add(obj: Actor) {
-        this.actors.push(obj)
-        console.log({obj});
-        
+        this.actors.push(obj)  
         this.app.stage.addChild(obj.sprite)
         this.render()
     }
@@ -371,11 +404,9 @@ export class Actor {
         this.y = options.y || 0
         this.img = options.img || ""
         if (this.img) this.sprite = PIXI.Sprite.from(options.img!)
-        console.log(this.sprite.width, this.sprite.height);
+        //console.log(this.sprite.width, this.sprite.height);
         this.sprite.texture.baseTexture.on("loaded", () => {
             this.resize(options)
-            console.log(this.sprite.width, this.sprite.height);
-            console.log("rs", this.sprite.texture.baseTexture.width, this.sprite.texture.baseTexture.height);
         })
         this.world = options.world || latestWorld
         this.autorotate = options.autorotate || true;
@@ -399,9 +430,7 @@ export class Actor {
             this.sprite.scale.y = options.hUnits * this.world.pxPerUnit / height;
             if (!options.wUnits) this.sprite.scale.x = this.sprite.scale.y; //Verzerren möglich, falls erwünscht
         }
-        this.sprite.position = this.world.unitsToPx(this);
-        console.log(this.sprite.scale, options.wUnits);
-        
+        this.sprite.position = this.world.unitsToPx(this);        
     }
     draw() {
         this.sprite.position = this.world.unitsToPx(this);
