@@ -45,6 +45,13 @@ export class World {
         //add resizeObserver
         this.rescale()
     }
+    getAspectRatio() {
+        const {w, h} = this.originalParams
+        if(w && h) return w / h
+        const localRatio = localStorage[`simhelpers-ratio-${this.img}`]
+        if(localRatio) return localRatio
+        return window.innerWidth / window.innerHeight
+    }
     static async create(params: WorldParams): Promise<World> {
         const world = new World(params)
         const img = params.img
