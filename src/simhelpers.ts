@@ -85,7 +85,9 @@ export class World {
         if (img) {
             this.background = PIXI.Sprite.from(img);
             this.app.stage.addChild(this.background);
+            console.log("add bg");
             this.background.texture.baseTexture.on("loaded", () => {
+                console.log("bg ready");
                 this.resizeBG()
             })
         }
@@ -112,7 +114,8 @@ export class World {
         this.app.renderer.render(this.app.stage)
     }
     add(obj: Actor) {
-        this.actors.push(obj)  
+        this.actors.push(obj) 
+        console.log("add actor");
         this.app.stage.addChild(obj.sprite)
         this.render()
     }
@@ -360,6 +363,8 @@ export class Actor {
         if (this.img) this.sprite = PIXI.Sprite.from(options.img!)
         //console.log(this.sprite.width, this.sprite.height);
         this.sprite.texture.baseTexture.on("loaded", () => {
+            console.log(1);
+            
             this.resize(options)
         })
         this.world = options.world || latestWorld
