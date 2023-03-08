@@ -18,73 +18,51 @@ let latestWorld: World
 
 export class World {
     readonly originalParams: WorldParams
-    element: HTMLElement
-    img?: string
-    minUnits: TCoord
-    maxPx: {w: number, h: number}
-    w!: number
-    h!: number
-    color: Color
+    readonly element: HTMLElement
+    private img?: string
+    private minUnits: TCoord
+    private maxPx: {w: number, h: number}
+    private w!: number
+    private h!: number
+    private color: Color
+    private background?: PIXI.Sprite
     actors: Actor[]
-    app: PIXI.Application
-    background?: PIXI.Sprite
+    readonly app: PIXI.Application
 
     constructor(params: WorldParams) {
         this.originalParams = params        
         this.element = params.element as HTMLElement || document.body
-
         this.maxPx = params.maxPx || this.getAutoSize()
-
         this.minUnits = params.minUnits || {x: 0, y: 0}
-
         this.img = params.img || ""
         this.color = params.color || "#111";
-
         this.app = new PIXI.Application({background: this.color});
         this.element.appendChild(this.app.view as unknown as HTMLElement)
-        
         this.adaptSize()
         this.loadBackground()
-        window.addEventListener("resize", ()=>this.resize)       
-
         this.actors = []
-
         latestWorld = this
+        window.addEventListener("resize", ()=>this.resize())       
         //add resizeObserver
     }
-    getAutoSize() {
+    private getAutoSize() {
         return {w: Math.min(window.innerWidth, this.element.getBoundingClientRect().width), h: window.innerHeight}
     }
     getAspectRatio() {
         return this.getForcedRatio() || this.getStoredRatio() || window.innerWidth / window.innerHeight
     }
-    getForcedRatio() {
+    private getForcedRatio() {
         const {w, h} = this.originalParams
         return w && h ? w / h : null
     }
-    getStoredRatio() {
+    private getStoredRatio() {
         return localStorage[this.getAspectKey()] || null
     }
-    getAspectKey() {
+    private getAspectKey() {
         return `simhelpers-ratio-${this.img}`
     }
-    // setSizeFromDim() {
-    //     const {w, h} = this.originalParams
-    //     if(!w || ! h) {
-    //         console.warn("Please provide image or w,h in units")
-    //         return
-    //     }
-    //     this.dimPx = this.element.getBoundingClientRect()
-    //     const availableWidth = Math.min(this.dimPx.width, window.innerWidth)
-    //     const availableHeight = Math.min(this.dimPx.height || window.innerHeight, window.innerHeight)
-    //     const pxPerUnit = Math.min(availableWidth/ w, availableHeight / h)
-    //     this.app.view.width = w * pxPerUnit
-    //     this.app.view.height = h * pxPerUnit
-    //     this.dimPx = this.element.getBoundingClientRect()
-    // }
     adaptSize() {
         const {w, h} = this.dimPx()
-        console.log({w, h});
         this.app.view.width = w
         this.app.view.height = h
     }
@@ -102,32 +80,13 @@ export class World {
             h: h || (w && w / this.getAspectRatio()) || this.maxPx.h,
         }
     }
-    // rescale() {
-    //     const params = this.originalParams
-    //     if (params.w) {
-    //         this.w = params.w
-    //         this.h = this.dimPx.height / this.pxPerUnit
-    //     }
-    //     else if (params.h) {
-    //         this.h = params.h
-    //         let pxPerUnit = this.dimPx.height / this.h
-    //         this.w = this.dimPx.height / pxPerUnit
-    //     }
-    //     else {
-    //         this.w = this.dimPx.width
-    //         this.h = this.dimPx.height
-    //     }
-    //     this.minUnits = params.minUnits || { x: -this.w / 2, y: -this.h / 2 };
-    // }
     loadBackground() {
         const img = this.img
         if (img) {
             this.background = PIXI.Sprite.from(img);
-           
             this.app.stage.addChild(this.background);
             this.background.texture.baseTexture.on("loaded", () => {
                 this.resizeBG()
-                //this.createAxis(params.grid);
             })
         }
     }
@@ -147,35 +106,8 @@ export class World {
         if(!this.originalParams.maxPx) {
             this.maxPx = this.getAutoSize()
         }
-        console.log(this.maxPx);
-        
         this.resizeBG()
     }
-
-    // static async create(params: WorldParams): Promise<World> {
-    //     const world = new World(params)
-    //     const img = params.img
-    //     if (img) {
-    //         return new Promise((resolve)=>{
-    //             let background = PIXI.Sprite.from(img);
-    //             world.app.stage.addChild(background);
-    //             window.addEventListener("resize", ()=>world.resizeBG(background))         
-    //             background.texture.baseTexture.on("loaded", () => {
-    //                 world.resizeBG(background)
-    //                 resolve(world)
-    //                 //this.createAxis(params.grid);
-    //             })
-    //         })
-    //     }
-    //     else {
-    //         world.setSizeFromDim()
-    //         return world
-    //     }
-    // }
-    getSize() {
-
-    }
-
     render() {
         this.app.renderer.render(this.app.stage)
     }
