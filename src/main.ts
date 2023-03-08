@@ -1,6 +1,6 @@
 import {World, Actor} from "./simhelpers"
 
-const world = await World.create({
+const world = new World({
     element: document.querySelector(".app"),
     h: 200,
     unit: "m",
