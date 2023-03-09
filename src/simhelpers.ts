@@ -65,6 +65,9 @@ export class World {
         const {w, h} = this.dimPx()
         this.app.view.width = w
         this.app.view.height = h
+        this.app.resizeTo = this.app.view as HTMLCanvasElement
+        this.app.resize()
+
     }
     dimPx() {
         const {w: wMax, h: hMax} = this.maxPx
@@ -126,6 +129,8 @@ export class World {
         return this.dimPx().h - (yUnit - this.minUnits.y) * this.pxPerUnit
     }
     unitsToPx(units: TCoord) {
+        console.log({x: this.xToPx(units.x), y: this.yToPx(units.y)});
+        
         return { x: this.xToPx(units.x), y: this.yToPx(units.y) }
     }
     xToUnit(xPx: number) {
@@ -135,7 +140,7 @@ export class World {
         return (this.dimPx().h - yPx) / this.pxPerUnit + this.minUnits.y
     }
     get pxPerUnit() {
-        return this.dimPx().w / this.w
+        return this.dimPx().pxPerUnit
     }
     pxToUnits(px: TCoord) {
         return { x: this.xToUnit(px.x), y: this.yToUnit(px.y) }
@@ -362,9 +367,7 @@ export class Actor {
         this.img = options.img || ""
         if (this.img) this.sprite = PIXI.Sprite.from(options.img!)
         //console.log(this.sprite.width, this.sprite.height);
-        this.sprite.texture.baseTexture.on("loaded", () => {
-            console.log(1);
-            
+        this.sprite.texture.baseTexture.on("loaded", () => {            
             this.resize(options)
         })
         this.world = options.world || latestWorld
