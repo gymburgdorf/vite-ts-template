@@ -7,6 +7,7 @@ const world = new World({
     minUnits: {x: 0, y:0},
     img: "https://gymburgdorf.github.io/simhelpers/img/oceanSky.jpg", 
 });
+world.createAxis({step: 50, color: "#fff"})
 
 // const world2 = await World.create({
 //     element: document.querySelector(".app2"),
@@ -21,8 +22,8 @@ const world = new World({
 const flugi = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: -40, y: 60, wUnits: 14});
 const glider = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/Segelflieger50.png", x: 20, y: 18, wUnits: 14});
 setTimeout(()=>{
-    const t = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: -40, y: 60, wUnits: 14});
-    console.log(t);
+    const ne = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: 80, y: 120, wUnits: 14});
+    setTimeout(()=>ne.resize({w: 40}), 1000)
 }, 2000)
 let t = 0;
 const dt = 0.016;       // Zeitschritt in Sekunden
