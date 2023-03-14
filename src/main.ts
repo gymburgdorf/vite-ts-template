@@ -21,9 +21,13 @@ world.createAxis({step: 50, color: "#fff"})
 
 const flugi = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/flugi50.png", x: -40, y: 60, wUnits: 14});
 const glider = new Actor({img: "https://gymburgdorf.github.io/simhelpers/img/Segelflieger50.png", x: 20, y: 18, wUnits: 14});
-const line = new Line({from: {x: 100, y: 200}, to: {x: 200, y: 100}});
+const line = new Line({from: {x: 100, y: 200}, to: {x: 200, y: 100}, color: 0xccddee});
 const circle = new Circle({x: 150, y: 100, r: 30, color: 0x440000});
 
+setTimeout(()=>{
+    line.setColor(0xddeeff)
+    circle.setColor(0x000000)
+}, 1000)
 
 let t = 0;
 const dt = 0.016;       // Zeitschritt in Sekunden

@@ -325,14 +325,20 @@ export class Actor extends Drawable {
 
 abstract class GraphicsSprite extends Drawable {
     obj: PIXI.Graphics
-    constructor(props: Partial<IDrawable>) {
-        const {x = 0, y = 0, wUnits, hUnits, alpha, anchor, rotation, world} = props
+    color: number
+    constructor(props: Partial<IDrawable> & {color: number}) {
+        const {x = 0, y = 0, wUnits, hUnits, alpha, anchor, rotation, world, color} = props
         const obj = new PIXI.Graphics()
         super(obj, x, y, wUnits, hUnits, alpha, anchor, rotation, world)
         this.obj = obj
+        this.color = color
     }
     abstract resetGraphic(): void
     onResize() {
+        this.resetGraphic()
+    }
+    setColor(value: number) {
+        this.color = value
         this.resetGraphic()
     }
 }
@@ -345,7 +351,6 @@ type LineParams = LinePos & {
     world?: World
 }
 export class Line extends GraphicsSprite {
-    color: number
     thickness: number
     from: TCoord
     to: TCoord
@@ -355,11 +360,10 @@ export class Line extends GraphicsSprite {
         const {alpha = 1, color = 0x112233, thickness = 3, world} = params
         const x = 0 //(from.x + to.x) / 2
         const y = 0 //(from.y + to.y) / 2
-        super({x, y, wUnits: Math.abs(to.x - from.x), hUnits: Math.abs(to.y - from.y), alpha, world})
+        super({x, y, wUnits: Math.abs(to.x - from.x), hUnits: Math.abs(to.y - from.y), alpha, world, color})
         this.thickness = params.thickness || 3
         this.from = from
         this.to = to
-        this.color = color
         this.resetGraphic()
         this.draw()
         this.world.add(this)
@@ -385,21 +389,15 @@ type CircleParams = TCoord & {
     r?: number
 }
 export class Circle extends GraphicsSprite {
-    color: number
     constructor(params: CircleParams) {
         const {x = 0, y = 0, alpha = 1, color = 0xaabbcc, r = 1, world} = params
-        super({x, y, wUnits: 2 * r, hUnits: 2 * r, alpha, world})
-        this.color = color
+        super({x, y, wUnits: 2 * r, hUnits: 2 * r, alpha, world, color})
         this.resetGraphic()
         this.draw()
         this.world.add(this)
     }
     setRadius(value: number) {
         this.wUnits = this.hUnits = 2 * value
-        this.resetGraphic()
-    }
-    setColor(value: number) {
-        this.color = value
         this.resetGraphic()
     }
     resetGraphic() {
