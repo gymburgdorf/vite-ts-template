@@ -1,2 +1,3 @@
-# simhelpers
-helpers for simulations and games
+# template
+
+update package.json
