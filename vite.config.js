@@ -5,9 +5,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/simhelpers.ts'),
-      name: 'simhelpers',
-      fileName: 'simhelpers',
+      entry: resolve(__dirname, 'src/lib.ts'),
+      name: 'lib',
+      fileName: 'lib',
     },
   },
 })
